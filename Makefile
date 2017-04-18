@@ -1,15 +1,14 @@
 # Build markargv
 
-all: makeargv_u makeargv_t
+all: burst_t burst
 
-makeargv_u: makeargv_u.o makeargv.o
-	gcc makeargv_u.o makeargv.o -o makeargv_u
+burst: burst.o burst_t.o
+	gcc burst_t.o  -o burst_t
+	gcc burst.o  -o burst
 
-run: makeargv_u
-	./makeargv_u "Hi"
 
-test: makeargv_t
-	./makeargv_t
+test: burst_t
+	./burst_t
 
 clean:
-	rm -f makeargv.o makeargv_u.o makeargv_t.o makeargv_u makeargv_t
+	rm -f burst.o burst_t.o

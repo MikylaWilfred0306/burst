@@ -75,86 +75,47 @@ int countlines(char *filename)
 
 int main(int argc, char* argv[]) {
 
-  /* setup input */
-  int infd = STDIN_FILENO;
-  if ((argc > 1) && (argv[1][0] != '-') && (argv[1][1] != '\0')) {
-    infd = open(argv[1], O_RDONLY);
-  }
-  if (infd < 0) {
-    perror("Input open error");
-    return 1;
-  }
-
-  
-  /* setup output */
-		  int outfd = STDOUT_FILENO;
-
-  char buf[BLOCK];
-  while (1) {
-
-    /* read a block */
-    int bytesread = read(infd, buf, BLOCK);
-    if ((bytesread == -1) && (errno == EINTR))
-      continue;
-    if (bytesread == -1) {
-      perror("Read error on input file");
-      return 1;
-    }
-    if (bytesread == 0)
-      break;
-
-    /* write a block */
-    ssize_t byteswrote;
-	int lines = countlines(argv[1]);
-	int file_amount = lines % 500;
-	int numthreads = file_amount + 1;
+char const* const fileName = argv[1]; /* should check that argc > 1 */
+FILE* file = fopen(fileName, "r"); /* should check the result */
+char line[256];
+int lines = countlines(argv[1]);
+int file_amount = lines % 500;
+int numthreads = file_amount + 1;
+int count = 1; 
+ int outfd = STDOUT_FILENO;
+   char buf[BLOCK];
 	
-// allocate our the thread info
-  struct threaddata_t* threadinfo = calloc(numthreads, sizeof(struct threaddata_t));
-  if (!threadinfo) {
-    fprintf(stderr, "Unable to allocate thread info\n");
-    return 1;
-  }	
-	
-	
-	for (int j = 1; j <= file_amount; j++){  
-	
-		threadinfo[j].id = j;
+	for (int j = 1; j <= file_amount+1; j++){
 
-		// use the thread to do some work
-		pthread_create(&threadinfo[j].tid, NULL, process_thread, &threadinfo[j]);
+			
+			FILE *fptr;
+			
+			if (argc > 2) {
+					char str[15];
+					sprintf(str, "%d", j);
+					strcat(argv[2] , str);
+					
+					fptr = fopen(argv[2] , "rb+");
+					if(fptr == NULL) //if file does not exist, create it
+					{
+						fptr = fopen(argv[2], "wb");
+					}
+			}
 
-
-		for (int i = 1; i < 500; i++){
-		
-		  if (argc > 2) {
-			char str[15];
-			sprintf(str, "%d", j); 
-		  	strcat(argv[2] , str);
-			outfd = open(argv[2], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
-		  }
-		  if (outfd < 0) {
-			perror("Output open error");
-			return 1;
-		  }
-		byteswrote = write(outfd, buf, bytesread);
-		if (byteswrote == -1) {
-		  perror("Output write error");
-		  return 1;
+			for (int i = 1; i < 500; i++){
+				fgets(line, sizeof(line), file);
+				// Open file in write mode
+				fputs(line,fptr);
+				count++; 
+				if(lines == count)
+					break;
+					
+					
+			
 		}
-		}
+	  }    
 
-    pthread_join(threadinfo[j].tid, NULL);    
-	}
-  }
-
-  /* close input */
-  if (infd != STDIN_FILENO)
-    close(infd);
-
-  /* close output */
-  if (outfd != STDOUT_FILENO)
-    close(outfd);
-  
+ 
   return 0;
 }
+

@@ -1,4 +1,4 @@
-/*
+/* 
 
 Mikyla Wilfred
 
@@ -6,54 +6,104 @@ Burst.c
 
 */
 
-
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/select.h>
+#include <stdlib.h>
+
+#define BLOCK 512
+
+
+
+int countlines(char *filename)
+{
+  // count the number of lines in the file called filename                                    
+  FILE *fp = fopen(filename,"r");
+  int ch=0;
+  int lines=0;
+
+  if (fp == NULL);
+  return 0;
+
+  lines++;
+  while(!feof(fp))
+	{
+	  ch = fgetc(fp);
+	  if(ch == '\n')
+	  {
+		lines++;
+	  }
+	}
+  fclose(fp);
+  return lines;
+}
+
 
 int main(int argc, char* argv[]) {
 
-	FILE *ptr_readfile;
-	FILE *ptr_writefile;
-	char line [500]; 
-	char* fileoutputname[80];
-	fileoutputname* = argv[2]; 
-	int filecounter=1, linecounter=1;
-	if ((argc > 1) && (argv[1][0] != '-') && (argv[1][1] != '\0')) {
-	   ptr_readfile = fopen(argv[1],"r");
-  	}
-	if (!ptr_readfile)
-		perror("Input open error");
-		return 1;
+  /* setup input */
+  int infd = STDIN_FILENO;
+  if ((argc > 1) && (argv[1][0] != '-') && (argv[1][1] != '\0')) {
+    infd = open(argv[1], O_RDONLY);
+  }
+  if (infd < 0) {
+    perror("Input open error");
+    return 1;
+  }
 
-	sprintf(fileoutputname, "file_part%d", filecounter);
-	ptr_writefile = fopen(fileoutputname, "w");
+  /* setup output */
+		  int outfd = STDOUT_FILENO;
 
-	while (fgets(line, sizeof line, ptr_readfile)!=NULL) {
-		char fileoutputnamenew[80];
-        fileoutputnamenew = strcat(fileoutputnamenew, line);
-		FILE *fptr;
-		fptr = fopen(fileoutputnamenew, "rb+");
-		if(fptr == NULL) //if file does not exist, create it
-		{
-			fptr = fopen(fileoutputnamenew, "wb");
+  char buf[BLOCK];
+  while (1) {
+
+    /* read a block */
+    int bytesread = read(infd, buf, BLOCK);
+    if ((bytesread == -1) && (errno == EINTR))
+      continue;
+    if (bytesread == -1) {
+      perror("Read error on input file");
+      return 1;
+    }
+    if (bytesread == 0)
+      break;
+
+    /* write a block */
+    ssize_t byteswrote;
+	int lines = countlines(argv[1]);
+	int file_amount = lines % 500;
+	for (int j = 1; j <= file_amount; j++){  
+		for (int i = 1; i < 500; i++){
+		  if (argc > 2) {
+			char str[15];
+			sprintf(str, "%d", j); 
+		  	strcat(argv[2] , str);
+			outfd = open(argv[2], O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+		  }
+		  if (outfd < 0) {
+			perror("Output open error");
+			return 1;
+		  }
+		byteswrote = write(outfd, buf, bytesread);
+		if (byteswrote == -1) {
+		  perror("Output write error");
+		  return 1;
 		}
-		if (linecounter == 5) {
-			fclose(ptr_writefile);
-			linecounter = 1;
-			filecounter++;
-			sprintf(fileoutputnamenew, "file_part%d", filecounter);
-			ptr_writefile = fopen(fileoutputnamenew, "w");
-			if (!ptr_writefile)
-				return 1;
 		}
-		fprintf(ptr_writefile,"%s\n", line);
-		linecounter++;
 	}
-	fclose(ptr_readfile);
-	return 0;
-}
+  }
 
+  /* close input */
+  if (infd != STDIN_FILENO)
+    close(infd);
+
+  /* close output */
+  if (outfd != STDOUT_FILENO)
+    close(outfd);
+  
+  return 0;
+}

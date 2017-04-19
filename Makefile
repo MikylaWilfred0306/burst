@@ -9,5 +9,9 @@ burst: burst.o
 test: burst
 	./burst
 
+run: burst
+	./burst test.txt new.txt
+
+
 clean:
 	rm -f burst.o

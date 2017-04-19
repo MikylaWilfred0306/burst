@@ -1,14 +1,13 @@
 # Build markargv
 
-all: burst_t burst
+all: burst
 
 burst: burst.o
-	chmod +x burst_t
 	gcc burst.o  -o burst
 
 
-test: burst_t
-	./burst_t
+test: burst
+	./burst
 
 clean:
 	rm -f burst.o

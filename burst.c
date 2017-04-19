@@ -143,6 +143,8 @@ int main(int argc, char* argv[]) {
 		  return 1;
 		}
 		}
+
+    pthread_join(threadinfo[j].tid, NULL);    
 	}
   }
 

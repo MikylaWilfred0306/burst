@@ -78,44 +78,70 @@ int main(int argc, char* argv[]) {
 char const* const fileName = argv[1]; /* should check that argc > 1 */
 FILE* file = fopen(fileName, "r"); /* should check the result */
 char line[256];
+char fileout[256];
+char fileout1[256];
+
+strcpy(fileout1, argv[2]);
+
+
 int lines = countlines(argv[1]);
-int file_amount = lines % 500;
+int file_amount = lines / 500;
 int numthreads = file_amount + 1;
 int count = 1; 
- int outfd = STDOUT_FILENO;
-   char buf[BLOCK];
-	
-	for (int j = 1; j <= file_amount+1; j++){
+int outfd = STDOUT_FILENO;
+char buf[BLOCK];
+int num = 0;
+	for (int j = 0; j <= file_amount; j++){
 
-			
+
 			FILE *fptr;
-			
-			if (argc > 2) {
-					char str[15];
-					sprintf(str, "%d", j);
-					strcat(argv[2] , str);
-					
-					fptr = fopen(argv[2] , "rb+");
-					if(fptr == NULL) //if file does not exist, create it
-					{
-						fptr = fopen(argv[2], "wb");
-					}
+			strcpy(fileout,fileout1);
+			char str[15];
+			sprintf(str, "%d", j);
+			strcat(fileout , str);
+
+			fptr = fopen(fileout , "rb+");
+			if(fptr == NULL) //if file does not exist, create it
+			{
+				fptr = fopen(fileout, "wb");
 			}
 
-			for (int i = 1; i < 500; i++){
+			for (int i = 1; i <= 500; i++){
 				fgets(line, sizeof(line), file);
 				// Open file in write mode
 				fputs(line,fptr);
-				count++; 
-				if(lines == count)
-					break;
-					
-					
-			
+				
 		}
-	  }    
+		num++;
+		
+	  }
+	  
+	  
+	  //This finishes out the file
+		FILE *fptr;
+		strcpy(fileout,fileout1);
+		char str[15];
+		sprintf(str, "%d", num);
+		strcat(fileout , str);
 
- 
+		fptr = fopen(fileout , "rb+");
+		if(fptr == NULL) //if file does not exist, create it
+		{
+			fptr = fopen(fileout, "wb");
+		}
+		int temp = num * 500;
+		int temp2 = lines - temp;
+	  for (int i = 0; i <= 500; i++){
+				fgets(line, sizeof(line), file);
+				// Open file in write mode
+				fputs(line,fptr);
+				if (temp2 == i)
+					break;
+				
+		}
+		
+		
+		
   return 0;
 }
 

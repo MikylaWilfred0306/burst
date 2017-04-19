@@ -14,6 +14,36 @@ Burst.c
 #include <fcntl.h>
 #include <sys/select.h>
 #include <stdlib.h>
+#include <pthread.h>
+#include <time.h>
+
+struct threaddata_t {
+  int id;
+  int status;
+  pthread_t tid;
+};
+
+// generic processing of a thread
+void* process_thread(void* args) {
+
+  // unpack the args
+  struct threaddata_t* data = args;
+
+  // trace that we started
+  fprintf(stderr, "Process %d starting\n", data->id);
+
+  // processing  ...
+  srand(time(NULL) * data->id);
+  sleep(rand() % 4);
+  
+  // trace that we ended
+  fprintf(stderr, "Process %d ending\n", data->id);
+
+  return &(data->status);
+}
+
+
+
 
 #define BLOCK 512
 
@@ -55,6 +85,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  
   /* setup output */
 		  int outfd = STDOUT_FILENO;
 
@@ -76,8 +107,26 @@ int main(int argc, char* argv[]) {
     ssize_t byteswrote;
 	int lines = countlines(argv[1]);
 	int file_amount = lines % 500;
+	int numthreads = file_amount + 1;
+	
+// allocate our the thread info
+  struct threaddata_t* threadinfo = calloc(numthreads, sizeof(struct threaddata_t));
+  if (!threadinfo) {
+    fprintf(stderr, "Unable to allocate thread info\n");
+    return 1;
+  }	
+	
+	
 	for (int j = 1; j <= file_amount; j++){  
+	
+		threadinfo[j].id = j;
+
+		// use the thread to do some work
+		pthread_create(&threadinfo[j].tid, NULL, process_thread, &threadinfo[j]);
+
+
 		for (int i = 1; i < 500; i++){
+		
 		  if (argc > 2) {
 			char str[15];
 			sprintf(str, "%d", j); 

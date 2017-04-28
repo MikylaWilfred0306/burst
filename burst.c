@@ -16,8 +16,19 @@ Burst.c
 #include <stdlib.h>
 #include <pthread.h>
 #include <time.h>
+#include <getopt.h>
 
 #define BLOCK 512
+extern char* optarg;
+extern int optind, opterr, optopt;
+
+struct option longopts[] = {
+
+  { "output",           required_argument, NULL, 'o'},
+  { "input",           required_argument, NULL, 'i'},
+  
+  0
+};
 
 
 struct threaddata_t {
@@ -75,17 +86,50 @@ FILE *fp;
 }
 
 
-int main(int argc, char* argv[]) {
-int lines = countlines(argv[1]);
-char const* const fileName = argv[1]; /* should check that argc > 1 */
-FILE* file = fopen(fileName, "r"); /* should check the result */
+int main(int argc, char** argv) {
+
+  int flag = 0;
+  int option_result;
+  int oc;
+  int longindex;
 char line[256];
 char fileout[256];
 char fileout1[256];
+char filein[256];
 
-strcpy(fileout1, argv[2]);
+  while ((oc = getopt_long(argc, argv, "hVE:S:XNvl:", longopts, &longindex)) != -1) {
+
+    // invalid options
+    if (oc == '?') {
+      fprintf(stderr, "-%c\n", oc);
+      continue;
+    }
+
+    // keep track of which options
+    flag |= (1 << longindex);
+    
+     if (longopts[longindex].has_arg == required_argument)
+
+    // action based argument reporter
+    switch (oc) {
+    case 'o':
+      strcpy(fileout1, optarg);
+      break;
+    case 'i':
+      strcpy(filein, optarg);
+      break;
+
+    default:
+
+      break;
+    };
+  }
 
 
+
+int lines = countlines(filein);
+char const* const fileName = filein; /* should check that argc > 1 */
+FILE* file = fopen(fileName, "r"); /* should check the result */
 
 int file_amount = lines / 500;
 int numthreads = file_amount + 1;

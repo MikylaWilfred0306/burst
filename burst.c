@@ -92,44 +92,47 @@ int main(int argc, char** argv) {
   int option_result;
   int oc;
   int longindex;
-char line[256];
-char fileout[256];
+
 char fileout1[256];
 char filein[256];
 
-  while ((oc = getopt_long(argc, argv, "hVE:S:XNvl:", longopts, &longindex)) != -1) {
+  while ((oc = getopt_long(argc, argv, "i:o", longopts, &longindex)) != -1) {
 
     // invalid options
     if (oc == '?') {
       fprintf(stderr, "-%c\n", oc);
       continue;
     }
+ // where we are at in the options
+    fprintf(stderr, "%d\t%c\n", longindex, oc);
 
-    // keep track of which options
-    flag |= (1 << longindex);
-    
-     if (longopts[longindex].has_arg == required_argument)
 
     // action based argument reporter
     switch (oc) {
-    case 'o':
-      strcpy(fileout1, optarg);
-      break;
+    
     case 'i':
       strcpy(filein, optarg);
+      fprintf(stdout, "Got in: %s\n", optarg);
       break;
 
-    default:
+    case 'o':
+     // strcpy(fileout1, optarg);
+      fprintf(stdout, "Got out: %s\n", optarg);
+      break; 
 
+    default:
       break;
     };
   }
 
 
-
+/*
 int lines = countlines(filein);
-char const* const fileName = filein; /* should check that argc > 1 */
-FILE* file = fopen(fileName, "r"); /* should check the result */
+char const* const fileName = filein;
+FILE* file = fopen(fileName, "r");
+char line[256];
+char fileout[256];
+
 
 int file_amount = lines / 500;
 int numthreads = file_amount + 1;
@@ -191,7 +194,6 @@ if (!threadinfo) {
 		}
 		int temp = file_amount * 500;
 		int temp2 = lines - temp;
-		 fprintf(stdout, "BLAHHHH %d\n", temp2);
 	  for (int i = 1; i <= temp2; i++){
 				fgets(line, sizeof(line), file);
 				// Open file in write mode
@@ -200,7 +202,7 @@ if (!threadinfo) {
 		}
 		
 		
-		
+*/		
   return 0;
 }
 

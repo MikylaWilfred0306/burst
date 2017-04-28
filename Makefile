@@ -6,11 +6,8 @@ burst: burst.o
 	gcc burst.o -lpthread -o burst
 
 
-test: burst
-	./burst
-
 run: burst
-	./burst test.txt new.txt
+	./burst -o "new.txt" -i "test.txt"
 
 
 clean:

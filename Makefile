@@ -3,7 +3,7 @@
 all: burst
 
 burst: burst.o
-	gcc burst.o -lpthread -o burst
+	gcc burst.o -larchive -lpthread -o burst
 
 
 run: burst

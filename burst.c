@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
 char fileout1[256];
 char filein[256];
 
-  while ((oc = getopt_long(argc, argv, "i:o", longopts, &longindex)) != -1) {
+  while ((oc = getopt_long(argc, argv, "i:o:", longopts, &longindex)) != -1) {
 
     // invalid options
     if (oc == '?') {
@@ -118,7 +118,7 @@ char filein[256];
       break;
 
     case 'o':
-     // strcpy(fileout1, optarg);
+      strcpy(fileout1, optarg);
       fprintf(stdout, "Got out: %s\n", optarg);
       break; 
 
@@ -128,83 +128,42 @@ char filein[256];
   }
 
 
-// setup the archive object
-   struct archive* a = archive_read_new();
-  archive_read_support_filter_all(a);
-  archive_read_support_format_raw(a);
-
 //Defaulted outname for now
-strcpy(fileout1, "new");
+//strcpy(fileout1, "new");
 
 char line[256];
 char fileout[256];
-  
-// actually open the archive file
-archive_read_open_filename(a, filein, 10240);
 
-  // read through the entries
-  struct archive_entry* entry;
-  while (archive_read_next_header(a, &entry) == ARCHIVE_OK) {
+FILE* file = fopen(filein, "r");
+int lines = countlines(filein);
+char const* const fileName = filein;
 
-  
-  
- 	strcpy(filein, archive_entry_pathname(entry));
-	FILE* file = fopen(archive_entry_pathname(entry), "r");
-	int lines = countlines(filein);
-	char const* const fileName = filein;
 
-	
-	int file_amount = lines / 500;
-	int numthreads = file_amount + 1;
-	int count = 1; 
-	int outfd = STDOUT_FILENO;
-	char buf[BLOCK];
-	int num = 0;
+int file_amount = lines / 500;
+int numthreads = file_amount + 1;
+int count = 1; 
+int outfd = STDOUT_FILENO;
+char buf[BLOCK];
+int num = 0;
 
 
 
-	// allocate our the thread info
-	struct threaddata_t* threadinfo = calloc(numthreads, sizeof(struct threaddata_t));
-	if (!threadinfo) {
-		fprintf(stderr, "Unable to allocate thread info\n");
-		return 1;
-	}
-		for (int j = 0; j < file_amount; j++){
-				threadinfo[j].id = j;
+// allocate our the thread info
+struct threaddata_t* threadinfo = calloc(numthreads, sizeof(struct threaddata_t));
+if (!threadinfo) {
+	fprintf(stderr, "Unable to allocate thread info\n");
+	return 1;
+}
+	for (int j = 0; j < file_amount; j++){
+			threadinfo[j].id = j;
 
-				// use the thread to do some work
-				pthread_create(&threadinfo[j].tid, NULL, process_thread, &threadinfo[j]);
+			// use the thread to do some work
+			pthread_create(&threadinfo[j].tid, NULL, process_thread, &threadinfo[j]);
 
-				FILE *fptr;
-				strcpy(fileout,fileout1);
-				char str[15];
-				sprintf(str, "%d", j);
-				strcat(fileout , str);
-
-				fptr = fopen(fileout , "rb+");
-				if(fptr == NULL) //if file does not exist, create it
-				{
-					fptr = fopen(fileout, "wb");
-				}
-
-				for (int i = 1; i <= 500; i++){
-					fgets(line, sizeof(line), file);
-					// Open file in write mode
-					fputs(line,fptr);
-				
-			}
-		
-			pthread_join(threadinfo[j].tid, NULL);    
-			num++;
-		
-		  }
-		  
-		  
-		  //This finishes out the file
 			FILE *fptr;
 			strcpy(fileout,fileout1);
 			char str[15];
-			sprintf(str, "%d", num);
+			sprintf(str, "%d", j);
 			strcat(fileout , str);
 
 			fptr = fopen(fileout , "rb+");
@@ -212,20 +171,41 @@ archive_read_open_filename(a, filein, 10240);
 			{
 				fptr = fopen(fileout, "wb");
 			}
-			int temp = file_amount * 500;
-			int temp2 = lines - temp;
-		  for (int i = 1; i <= temp2; i++){
-					fgets(line, sizeof(line), file);
-					// Open file in write mode
-					fputs(line,fptr);
-							
-			}
-    // move over the data part of the archive entry
-    archive_read_data_skip(a);
-  }		
-		
- // close it up
-  archive_read_close(a);
+
+			for (int i = 1; i <= 500; i++){
+				fgets(line, sizeof(line), file);
+				// Open file in write mode
+				fputs(line,fptr);
+			
+		}
+	
+		pthread_join(threadinfo[j].tid, NULL);    
+		num++;
+	
+	  }
+	  
+	  
+	  //This finishes out the file
+		FILE *fptr;
+		strcpy(fileout,fileout1);
+		char str[15];
+		sprintf(str, "%d", num);
+		strcat(fileout , str);
+
+		fptr = fopen(fileout , "rb+");
+		if(fptr == NULL) //if file does not exist, create it
+		{
+			fptr = fopen(fileout, "wb");
+		}
+		int temp = file_amount * 500;
+		int temp2 = lines - temp;
+	  for (int i = 1; i <= temp2; i++){
+				fgets(line, sizeof(line), file);
+				// Open file in write mode
+				fputs(line,fptr);
+						
+		}
+
 		
   return 0;
 }

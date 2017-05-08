@@ -1,9 +1,13 @@
 NAME
+
     ./burst This function breaks apart a file based on number of lines.
+
 SYNOPSIS
-  Usage: ./bash [OPTION]...
+
+	Usage: ./bash [OPTION]...
           
 DESCRIPTION
+
     This function breaks apart a file inputed in the line to multiple files based on the output name, also supplied in line. 
 	
 	-a, --all=FILE
@@ -28,6 +32,7 @@ DESCRIPTION
 		This option gives the version of the program. 
 
 EXAMPLES
+
     ./bash -i "test.txt" -o "new.txt" 
 		Reads from test.txt and prints to new-0.txt, new-1.txt... 500 lines a file. 
 		
@@ -38,8 +43,10 @@ EXAMPLES
 		Reads from test.txt and prints to test-0.txt, test-1.txt... 250 lines a file. 
 
 AUTHOR
-   Mikyla Wilfred
-   mikyla.wilfred@gmail.com
+
+	Mikyla Wilfred
+   	mikyla.wilfred@gmail.com
    
 COPYRIGHT
+
     Specify your copyright information.

@@ -29,10 +29,12 @@ struct option longopts[] = {
   { "output",           required_argument, NULL, 'o'},
   { "input",           required_argument, NULL, 'i'},
 { "numberLines",           required_argument, NULL, 'n'},
+{ "all",           required_argument, NULL, 'a'},
   
 	
 	{ "help",               no_argument,       NULL, 'h'},
     { "version",            no_argument,       NULL, 'V'},
+    { "quiet",            no_argument,       NULL, 'q'},
 	
   0
 };
@@ -97,15 +99,9 @@ void* process_thread(void* args) {
   // unpack the args
   struct threaddata_t* data = args;
 
-  // trace that we started
-  fprintf(stderr, "Process %d starting\n", data->id);
-
   // processing  ...
   srand(time(NULL) * data->id);
   sleep(rand() % 4);
-  
-  // trace that we ended
-  fprintf(stderr, "Process %d ending\n", data->id);
 
   return &(data->status);
 }
@@ -144,6 +140,7 @@ int main(int argc, char** argv) {
 
   int flag = 0;
   int inflag = 0;
+  int stdflag = 0;
   int outflag = 0;
   int option_result;
   int oc;
@@ -153,7 +150,7 @@ int main(int argc, char** argv) {
 char fileout1[256];
 char filein[256];
 
-  while ((oc = getopt_long(argc, argv, "i:o:n:hV", longopts, &longindex)) != -1) {
+  while ((oc = getopt_long(argc, argv, "i:o:n:hVqa:", longopts, &longindex)) != -1) {
 
     // invalid options
     if (oc == '?') {
@@ -167,15 +164,20 @@ char filein[256];
     
     case 'i':
       strcpy(filein, optarg);
-      fprintf(stdout, "Got in: %s\n", optarg);
 	  inflag = 1;
       break;
 
     case 'o':
       strcpy(fileout1, optarg);
-      fprintf(stdout, "Got out: %s\n", optarg);
 	  outflag = 1;
       break; 
+	
+	case 'a':
+      strcpy(filein, optarg);
+	  inflag = 1;
+      strcpy(fileout1, optarg);
+	  outflag = 1;
+      break;		
 			
 	case 'n':
 	  linesAmount = strtoumax(optarg, NULL, 10);
@@ -189,6 +191,11 @@ char filein[256];
 	  fprintf(stdout, "Version: 1.0\n");
       return 1;
 
+	case 'q':
+	  stdflag = 1;
+      break;
+		
+			
     default:
       break;
     };
@@ -213,9 +220,9 @@ int lines = countlines(filein);
 char const* const fileName = filein;
 	
 
-	
-fprintf(stdout, "Number of lines: %d\n", linesAmount);
-
+if (stdflag == 0){	
+	fprintf(stdout, "Number of lines: %d\n", linesAmount);
+}
 int file_amount = lines / linesAmount;
 int numthreads = file_amount + 1;
 int count = 1; 
@@ -266,8 +273,9 @@ if (!threadinfo) {
 			strcat(fileout , str);
 			strcat(fileout , ".");
 			strcat(fileout , fileext);
+	if (stdflag == 0){
  			printf("File Out Name = [%s]\n", fileout);
-		
+	}
 			fptr = fopen(fileout , "rb+");
 			if(fptr == NULL) //if file does not exist, create it
 			{
@@ -302,8 +310,9 @@ if (!threadinfo) {
 		strcat(fileout , str);
 		strcat(fileout , ".");
 		strcat(fileout , fileext);
+		if (stdflag == 0){
 		printf("File Out Name = [%s]\n", fileout);
-		
+	}
 		fptr = fopen(fileout , "rb+");
 		if(fptr == NULL) //if file does not exist, create it
 		{

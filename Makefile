@@ -7,7 +7,7 @@ burst: burst.o
 
 
 run: burst
-	./burst -o "new.txt" -i "test.txt"
+	./burst -o "new.txt" -i "test.txt" -n 250
 
 
 clean:

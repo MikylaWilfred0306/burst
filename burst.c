@@ -28,6 +28,7 @@ struct option longopts[] = {
 
   { "output",           required_argument, NULL, 'o'},
   { "input",           required_argument, NULL, 'i'},
+{ "numberLines",           required_argument, NULL, 'n'},
   
   0
 };
@@ -141,11 +142,12 @@ int main(int argc, char** argv) {
   int option_result;
   int oc;
   int longindex;
+  int linesAmount = 500;
 
 char fileout1[256];
 char filein[256];
 
-  while ((oc = getopt_long(argc, argv, "i:o:", longopts, &longindex)) != -1) {
+  while ((oc = getopt_long(argc, argv, "i:o:n:", longopts, &longindex)) != -1) {
 
     // invalid options
     if (oc == '?') {
@@ -168,6 +170,10 @@ char filein[256];
       strcpy(fileout1, optarg);
       fprintf(stdout, "Got out: %s\n", optarg);
       break; 
+			
+	case 'n':
+	  linesAmount = strtoumax(optarg, NULL, 10);
+      break; 
 
     default:
       break;
@@ -186,9 +192,10 @@ char filenameout[256];
 FILE* file = fopen(filein, "r");
 int lines = countlines(filein);
 char const* const fileName = filein;
+	
+fprintf(stdout, "Number of lines: %d\n", linesAmount);
 
-
-int file_amount = lines / 500;
+int file_amount = lines / linesAmount;
 int numthreads = file_amount + 1;
 int count = 1; 
 int outfd = STDOUT_FILENO;

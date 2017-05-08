@@ -30,6 +30,10 @@ struct option longopts[] = {
   { "input",           required_argument, NULL, 'i'},
 { "numberLines",           required_argument, NULL, 'n'},
   
+	
+	{ "help",               no_argument,       NULL, 'h'},
+    { "version",            no_argument,       NULL, 'V'},
+	
   0
 };
 char** str_split(char* a_str, const char a_delim)
@@ -139,6 +143,8 @@ FILE *fp;
 int main(int argc, char** argv) {
 
   int flag = 0;
+  int inflag = 0;
+  int outflag = 0;
   int option_result;
   int oc;
   int longindex;
@@ -147,16 +153,14 @@ int main(int argc, char** argv) {
 char fileout1[256];
 char filein[256];
 
-  while ((oc = getopt_long(argc, argv, "i:o:n:", longopts, &longindex)) != -1) {
+  while ((oc = getopt_long(argc, argv, "i:o:n:hV", longopts, &longindex)) != -1) {
 
     // invalid options
     if (oc == '?') {
       fprintf(stderr, "-%c\n", oc);
       continue;
     }
- // where we are at in the options
-    fprintf(stderr, "%d\t%c\n", longindex, oc);
-
+ 
 
     // action based argument reporter
     switch (oc) {
@@ -164,25 +168,40 @@ char filein[256];
     case 'i':
       strcpy(filein, optarg);
       fprintf(stdout, "Got in: %s\n", optarg);
+	  inflag = 1;
       break;
 
     case 'o':
       strcpy(fileout1, optarg);
       fprintf(stdout, "Got out: %s\n", optarg);
+	  outflag = 1;
       break; 
 			
 	case 'n':
 	  linesAmount = strtoumax(optarg, NULL, 10);
       break; 
+			
+	case 'h':
+	 fprintf(stdout, "Usage: ./bash [OPTION]... [ARGUMENT]... \n");
+      return 1;
+			
+	case 'V':
+	  fprintf(stdout, "Version: 1.0\n");
+      return 1;
 
     default:
       break;
     };
   }
 
-
-//Defaulted outname for now
-//strcpy(fileout1, "new");
+if(inflag == 0){
+	fprintf(stdout, "File in is mandatory. Use -i\n");
+     return 1;
+}
+if(outflag == 0){
+	fprintf(stdout, "File out is mandatory. Use -o\n");
+     return 1;
+}
 
 char line[256];
 char fileout[256];
@@ -192,6 +211,8 @@ char filenameout[256];
 FILE* file = fopen(filein, "r");
 int lines = countlines(filein);
 char const* const fileName = filein;
+	
+
 	
 fprintf(stdout, "Number of lines: %d\n", linesAmount);
 

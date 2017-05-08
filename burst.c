@@ -234,6 +234,7 @@ if (!threadinfo) {
 			strcpy(fileout,filenameout);
 			char str[15];
 			sprintf(str, "%d", j);
+			strcat(fileout , "-");
 			strcat(fileout , str);
 			strcat(fileout , ".");
 			strcat(fileout , fileext);
@@ -269,6 +270,7 @@ if (!threadinfo) {
 		char str[15];
 		sprintf(str, "%d", num);
 	
+		strcat(fileout , "-");
 		strcat(fileout , str);
 		strcat(fileout , ".");
 		strcat(fileout , fileext);

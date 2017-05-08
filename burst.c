@@ -31,6 +31,53 @@ struct option longopts[] = {
   
   0
 };
+char** str_split(char* a_str, const char a_delim)
+{
+    char** result    = 0;
+    size_t count     = 0;
+    char* tmp        = a_str;
+    char* last_comma = 0;
+    char delim[2];
+    delim[0] = a_delim;
+    delim[1] = 0;
+
+    /* Count how many elements will be extracted. */
+    while (*tmp)
+    {
+        if (a_delim == *tmp)
+        {
+            count++;
+            last_comma = tmp;
+        }
+        tmp++;
+    }
+
+    /* Add space for trailing token. */
+    count += last_comma < (a_str + strlen(a_str) - 1);
+
+    /* Add space for terminating null string so caller
+       knows where the list of returned strings ends. */
+    count++;
+
+    result = malloc(sizeof(char*) * count);
+
+    if (result)
+    {
+        size_t idx  = 0;
+        char* token = strtok(a_str, delim);
+
+        while (token)
+        {
+          
+            *(result + idx++) = strdup(token);
+            token = strtok(0, delim);
+        }
+       
+        *(result + idx) = 0;
+    }
+
+    return result;
+}
 
 
 struct threaddata_t {
@@ -133,6 +180,8 @@ char filein[256];
 
 char line[256];
 char fileout[256];
+char fileext[256];
+char filenameout[256];
 
 FILE* file = fopen(filein, "r");
 int lines = countlines(filein);
@@ -146,6 +195,27 @@ int outfd = STDOUT_FILENO;
 char buf[BLOCK];
 int num = 0;
 
+	
+char** tokens;
+	
+tokens = str_split(fileout1, '.');
+
+if (tokens)
+{
+	
+	
+	int i;
+	for (i = 0; *(tokens + i); i++)
+	{
+		
+		if(i == 0){
+			strcpy(filenameout,*(tokens + i));
+		} else {
+			strcpy(fileext,*(tokens + i));
+		}
+	}
+	free(tokens);
+}
 
 
 // allocate our the thread info
@@ -161,11 +231,14 @@ if (!threadinfo) {
 			pthread_create(&threadinfo[j].tid, NULL, process_thread, &threadinfo[j]);
 
 			FILE *fptr;
-			strcpy(fileout,fileout1);
+			strcpy(fileout,filenameout);
 			char str[15];
 			sprintf(str, "%d", j);
 			strcat(fileout , str);
-
+			strcat(fileout , ".");
+			strcat(fileout , fileext);
+ 			printf("File Out Name = [%s]\n", fileout);
+		
 			fptr = fopen(fileout , "rb+");
 			if(fptr == NULL) //if file does not exist, create it
 			{
@@ -178,7 +251,7 @@ if (!threadinfo) {
 				fputs(line,fptr);
 			
 		}
-	
+
 		pthread_join(threadinfo[j].tid, NULL);    
 		num++;
 	
@@ -186,12 +259,21 @@ if (!threadinfo) {
 	  
 	  
 	  //This finishes out the file
+	
+		threadinfo[num].id = num;
+
+		// use the thread to do some work
+		pthread_create(&threadinfo[num].tid, NULL, process_thread, &threadinfo[num]);
 		FILE *fptr;
 		strcpy(fileout,fileout1);
 		char str[15];
 		sprintf(str, "%d", num);
+	
 		strcat(fileout , str);
-
+		strcat(fileout , ".");
+		strcat(fileout , fileext);
+		printf("File Out Name = [%s]\n", fileout);
+		
 		fptr = fopen(fileout , "rb+");
 		if(fptr == NULL) //if file does not exist, create it
 		{
@@ -205,7 +287,7 @@ if (!threadinfo) {
 				fputs(line,fptr);
 						
 		}
-
+	pthread_join(threadinfo[num].tid, NULL);    
 		
   return 0;
 }

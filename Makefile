@@ -14,6 +14,5 @@ view : burst.html
 run: burst
 	./burst -o "new.txt" -i "test.txt" -n 250
 
-
 clean:
 	rm -f burst.o burst burst.html

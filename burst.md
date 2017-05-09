@@ -47,6 +47,3 @@ AUTHOR
 	Mikyla Wilfred
    	mikyla.wilfred@gmail.com
    
-COPYRIGHT
-
-    Specify your copyright information.

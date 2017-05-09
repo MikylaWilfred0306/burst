@@ -237,8 +237,8 @@ tokens = str_split(fileout1, '.');
 
 if (tokens)
 {
-	int i;
-	for (i = 0; *(tokens + i); i++)
+	int i = 0;
+	for (i; *(tokens + i); i++)
 	{
 		if(i == 0){
 			strcpy(filenameout,*(tokens + i));
@@ -256,7 +256,8 @@ if (!threadinfo) {
 	fprintf(stderr, "Unable to allocate thread info\n");
 	return 1;
 }
-	for (int j = 0; j < file_amount; j++){
+int j = 0;
+	for (j; j < file_amount; j++){
 			threadinfo[j].id = j;
 
 			// use the thread to do some work
@@ -278,8 +279,8 @@ if (!threadinfo) {
 			{
 				fptr = fopen(fileout, "wb");
 			}
-
-			for (int i = 1; i <= 500; i++){
+			int i = 1;
+			for (i; i <= 500; i++){
 				fgets(line, sizeof(line), file);
 				// Open file in write mode
 				fputs(line,fptr);
@@ -317,7 +318,8 @@ if (!threadinfo) {
 		}
 		int temp = file_amount * 500;
 		int temp2 = lines - temp;
-	  for (int i = 1; i <= temp2; i++){
+int i = 1;
+	  for (i; i <= temp2; i++){
 				fgets(line, sizeof(line), file);
 				// Open file in write mode
 				fputs(line,fptr);
